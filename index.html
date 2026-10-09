@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マイアプリ - 公式ページ</title>
+    <title>First App - Androidアプリ配布ページ</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -16,7 +16,7 @@
             min-height: 100vh;
         }
         header {
-            background-color: #6200ee;
+            background-color: #00796b;
             color: white;
             padding: 2rem 1rem;
             text-align: center;
@@ -37,8 +37,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            color: #555;
+            font-size: 2.5rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         h1 {
@@ -52,17 +51,18 @@
         }
         .btn {
             display: inline-block;
-            background-color: #6200ee;
+            background-color: #00796b;
             color: white;
-            padding: 0.8rem 2rem;
+            padding: 1rem 2.5rem;
             border-radius: 30px;
             text-decoration: none;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(98,0,238,0.3);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,121,107,0.3);
             transition: background-color 0.2s;
         }
         .btn:hover {
-            background-color: #3700b3;
+            background-color: #004d40;
         }
         .guide {
             background: white;
@@ -75,7 +75,7 @@
         .guide h2 {
             font-size: 1.1rem;
             margin-top: 0;
-            color: #6200ee;
+            color: #00796b;
         }
         .guide ol {
             margin: 0;
@@ -85,6 +85,15 @@
         }
         .guide li {
             margin-bottom: 0.5rem;
+        }
+        .warning {
+            background-color: #fff3e0;
+            border-left: 4px solid #ffb74d;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #e65100;
+            border-radius: 0 8px 8px 0;
         }
         footer {
             text-align: center;
@@ -96,28 +105,32 @@
 </head>
 <body>
     <header>
-        <h1>My App</h1>
-        <p style="color: #e0d4fc; margin: 0;">スマートフォンで快適に動くWebアプリ</p>
+        <h1>First App 配布ページ</h1>
+        <p style="color: #b2dfdb; margin: 0;">APKファイルを直接インストールできます</p>
     </header>
     <main>
-        <div class="app-icon">🚀</div>
-        <h1>アプリ名を書く</h1>
-        <p>ここにアプリの説明文を入れます。どのような機能があるか、どんな人に便利かを分かりやすく書きましょう。</p>
+        <div class="app-icon">🤖</div>
+        <h1>First App</h1>
+        <p>バーコード検索などができるAndroid向け自作アプリです。</p>
         
-        <a href="./app/" class="btn">アプリを開く</a>
+        <!-- 大容量リリース用の直リンクURLを設定しました -->
+        <a href="https://github.com/Chip-kun/First-app-development/releases/download/v1.0.0/app-debug.apk" class="btn" download>Android用 APKをダウンロード</a>
 
         <div class="guide">
-            <h2>スマホのホーム画面に追加する方法</h2>
+            <h2>インストール手順</h2>
             <ol>
-                <li>スマホのブラウザ（ChromeやSafari）でこのページを開きます。</li>
-                <li>ブラウザのメニューボタン（三点リーダーや共有アイコン）をタップします。</li>
-                <li>「ホーム画面に追加」を選択します。</li>
-                <li>これでアプリアイコンが追加され、全画面で起動できるようになります。</li>
+                <li>上のボタンをタップして、APKファイルをダウンロードします。</li>
+                <li>ダウンロード完了後、通知やファイルマネージャーからファイルを開きます。</li>
+                <li>「インストール」をタップします。</li>
             </ol>
+            <div class="warning">
+                <strong>💡 ご注意</strong><br>
+                Playストアを経由しないため、端末によっては「有害なアプリの可能性」「不明なアプリ」といった警告が出る場合があります。インストールを続行するには、ブラウザの「提供元不明のアプリのインストール」の許可をオンにしてください。
+            </div>
         </div>
     </main>
     <footer>
-        <p>&copy; 2026 Your Name</p>
+        <p>&copy; 2026 Chip-kun</p>
     </footer>
 </body>
 </html>
