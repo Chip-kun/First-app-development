@@ -81,10 +81,10 @@ data class ImeiInfo(
         const val DOCOMO_GUIDE_URL = "https://www.docomo.ne.jp/support/confirmation/"
         const val DOCOMO_URL = DOCOMO_SEARCH_URL
 
-        // SoftBank: official verification portal + direct endpoint
+        // SoftBank: official verification portal + direct endpoint (ct99)
         const val SOFTBANK_OFFICIAL_URL = "https://www.softbank.jp/mobile/support/3g/restriction/"
-        const val SOFTBANK_DIRECT_URL = "https://ct11.my.softbank.jp/WBF/icv"
-        const val SOFTBANK_URL = SOFTBANK_OFFICIAL_URL
+        const val SOFTBANK_DIRECT_URL = "https://ct99.my.softbank.jp/WBF/icv?_gl=1*13jir4*_gcl_au*MTIwNTEyNTM2Ny4xNzkxNTQ5NDgy"
+        const val SOFTBANK_URL = SOFTBANK_DIRECT_URL
 
         // au (KDDI)
         const val AU_URL = "https://au-cs0.kddi.com/FtHome"

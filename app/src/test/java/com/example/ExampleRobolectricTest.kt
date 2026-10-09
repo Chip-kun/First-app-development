@@ -68,6 +68,6 @@ class ExampleRobolectricTest {
 
         assertEquals("https://snowyskies.jp/imeiChecking/", com.example.data.model.ImeiInfo.MULTI_CHECKER_URL)
         assertTrue(com.example.data.model.ImeiInfo.DOCOMO_URL.contains("docomo"))
-        assertTrue(com.example.data.model.ImeiInfo.SOFTBANK_URL.contains("softbank"))
+        assertTrue(com.example.data.model.ImeiInfo.SOFTBANK_URL.contains("ct99.my.softbank.jp"))
     }
 }
