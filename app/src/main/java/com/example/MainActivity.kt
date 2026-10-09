@@ -249,7 +249,9 @@ fun MainApp(viewModel: MainViewModel) {
                     ImeiBatchScreen(
                         onOpenUrl = { url ->
                             try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
                                 context.startActivity(intent)
                             } catch (e: Exception) {
                                 Toast.makeText(context, "ブラウザを起動できませんでした", Toast.LENGTH_SHORT).show()

@@ -51,4 +51,23 @@ class ExampleRobolectricTest {
         val usOrigin = service.getBarcodeOriginCountry("012345678905")
         assertTrue(usOrigin.contains("アメリカ"))
     }
+
+    @Test
+    fun testImeiParsingAndExtraction() {
+        val rawBarcode = "IMEI: 358432109876543"
+        val extracted = com.example.data.model.ImeiInfo.extractImeiFromScannedText(rawBarcode)
+        assertEquals("358432109876543", extracted)
+
+        val pureDigits = "015893001234567"
+        val extractedPure = com.example.data.model.ImeiInfo.extractImeiFromScannedText(pureDigits)
+        assertEquals("015893001234567", extractedPure)
+
+        val imeiInfo = com.example.data.model.ImeiInfo.parse("358432109876543")
+        assertTrue(imeiInfo.isValidLength)
+        assertEquals(15, imeiInfo.imei.length)
+
+        assertEquals("https://snowyskies.jp/imeiChecking/", com.example.data.model.ImeiInfo.MULTI_CHECKER_URL)
+        assertTrue(com.example.data.model.ImeiInfo.DOCOMO_URL.contains("docomo"))
+        assertTrue(com.example.data.model.ImeiInfo.SOFTBANK_URL.contains("softbank"))
+    }
 }

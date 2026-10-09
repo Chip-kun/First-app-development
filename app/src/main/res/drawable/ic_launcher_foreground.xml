@@ -3,7 +3,7 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/ic_barcode_scanner_icon"
+        android:drawable="@drawable/ic_rabbit_scanner_icon"
         android:gravity="center" />
 </layer-list>
 

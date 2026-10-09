@@ -50,11 +50,50 @@ data class ImeiInfo(
             }
         }
 
-        // Japanese carrier restriction check URLs
-        const val DOCOMO_URL = "http://nw-restriction.nttdocomo.co.jp/top.php"
-        const val AU_URL = "https://my.au.com/cmn/WOS/WUEIP010/WUEIP010_01.pc"
-        const val SOFTBANK_URL = "https://ct11.my.softbank.jp/w/"
+        fun extractImeiFromScannedText(text: String): String? {
+            // 1. Check for standalone 14-16 digit numbers (standard IMEI is 15 digits)
+            val regex = Regex("""\b(\d{14,16})\b""")
+            val match = regex.find(text)
+            if (match != null) {
+                return match.groupValues[1]
+            }
+
+            // 2. Strip non-digits and test length
+            val digits = text.filter { it.isDigit() }
+            if (digits.length in 14..16) {
+                return digits
+            }
+
+            // 3. If barcode has extra characters or check digits
+            if (digits.length > 16) {
+                val candidate15 = digits.substring(0, 15)
+                if (checkLuhn(candidate15)) {
+                    return candidate15
+                }
+            }
+            return if (digits.length >= 14) digits.take(15) else null
+        }
+
+        // Japanese carrier restriction check URLs (Verified official working endpoints)
+        // docomo: direct search form + top page + official support guide
+        const val DOCOMO_SEARCH_URL = "http://nw-restriction.nttdocomo.co.jp/search.php"
+        const val DOCOMO_TOP_URL = "http://nw-restriction.nttdocomo.co.jp/top.php"
+        const val DOCOMO_GUIDE_URL = "https://www.docomo.ne.jp/support/confirmation/"
+        const val DOCOMO_URL = DOCOMO_SEARCH_URL
+
+        // SoftBank: official verification portal + direct endpoint
+        const val SOFTBANK_OFFICIAL_URL = "https://www.softbank.jp/mobile/support/3g/restriction/"
+        const val SOFTBANK_DIRECT_URL = "https://ct11.my.softbank.jp/WBF/icv"
+        const val SOFTBANK_URL = SOFTBANK_OFFICIAL_URL
+
+        // au (KDDI)
+        const val AU_URL = "https://au-cs0.kddi.com/FtHome"
+        const val AU_GUIDE_URL = "https://www.au.com/support/service/mobile/network-riyoseigen/"
+
+        // Rakuten Mobile
         const val RAKUTEN_URL = "https://network.mobile.rakuten.co.jp/restriction/"
-        const val MULTI_CHECKER_URL = "https://snow-white.cocolog-nifty.com/first/2014/03/4-3fa0.html"
+        
+        // 4-carrier batch checker (Snowy Skies ネットワーク利用制限チェッカー)
+        const val MULTI_CHECKER_URL = "https://snowyskies.jp/imeiChecking/"
     }
 }

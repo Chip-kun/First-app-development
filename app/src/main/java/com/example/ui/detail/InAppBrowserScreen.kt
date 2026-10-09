@@ -134,7 +134,9 @@ fun InAppBrowserScreen(
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.cacheMode = WebSettings.LOAD_DEFAULT
-                        settings.userAgentString = settings.userAgentString + " BarcodeSearchApp/1.0"
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        settings.useWideViewPort = true
+                        settings.loadWithOverviewMode = true
 
                         webViewClient = object : WebViewClient() {
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
