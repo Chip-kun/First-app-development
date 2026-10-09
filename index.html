@@ -28,17 +28,22 @@
             padding: 0 1rem;
             text-align: center;
         }
+        /* アイコン画像が丸角（24px）で綺麗に収まる枠の設定 */
         .app-icon {
-            width: 100px;
-            height: 100px;
-            background-color: #ddd;
-            border-radius: 20px;
+            width: 120px;
+            height: 120px;
             margin: 0 auto 1.5rem auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            background-color: #ddd; /* 画像が読み込まれる前の背景色 */
+        }
+        /* 画像が枠を突き破らないように強力に固定 */
+        .app-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block; 
         }
         h1 {
             font-size: 1.8rem;
@@ -109,14 +114,13 @@
         <p style="color: #b2dfdb; margin: 0;">APKファイルを直接インストールできます</p>
     </header>
     <main>
-        <!-- アイコン部分をうさぎの画像に差し替えました -->
+        <!-- 画像のファイル名を .png に修正し、はみ出し対策を適用しました -->
         <div class="app-icon">
-            <img src="./rabbit.jpg" alt="App Icon">
+            <img src="./rabbit.png" alt="App Icon">
         </div>
         <h1>First App</h1>
         <p>バーコード検索などができるAndroid向け自作アプリです。</p>
         
-        <!-- 大容量リリース用の直リンクURLを設定しました -->
         <a href="https://github.com/Chip-kun/First-app-development/releases/download/v1.0.0/app-debug.apk" class="btn" download>Android用 APKをダウンロード</a>
 
         <div class="guide">
