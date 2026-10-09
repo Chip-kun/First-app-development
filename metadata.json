@@ -1,0 +1,7 @@
+{
+  "name": "バーコード検索",
+  "description": "商品バーコード（JAN/EAN）をカメラで読み取り、自動で商品検索・価格比較ができるアプリです。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
