@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -54,12 +56,14 @@ import com.example.ui.MainViewModel
 import com.example.ui.detail.InAppBrowserScreen
 import com.example.ui.detail.ProductDetailSheet
 import com.example.ui.history.HistoryScreen
+import com.example.ui.imei.ImeiBatchScreen
 import com.example.ui.scanner.ScannerScreen
 import com.example.ui.settings.SettingsScreen
 import com.example.ui.theme.MyApplicationTheme
 
 enum class MainTab(val title: String) {
     SCANNER("スキャナー"),
+    IMEI("IMEI一括"),
     HISTORY("履歴・保存"),
     SETTINGS("設定")
 }
@@ -132,8 +136,9 @@ fun MainApp(viewModel: MainViewModel) {
                     title = {
                         Text(
                             text = when (selectedTab) {
-                                1 -> "スキャン履歴"
-                                2 -> "設定"
+                                1 -> "IMEI一括判定・買取検索"
+                                2 -> "スキャン履歴"
+                                3 -> "設定"
                                 else -> "バーコード検索"
                             },
                             fontWeight = FontWeight.Bold,
@@ -166,10 +171,24 @@ fun MainApp(viewModel: MainViewModel) {
                     modifier = Modifier.testTag("nav_tab_scanner")
                 )
 
-                // Tab 1: History
+                // Tab 1: IMEI Batch
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
+                    icon = {
+                        Icon(
+                            imageVector = if (selectedTab == 1) Icons.Filled.PhoneAndroid else Icons.Outlined.PhoneAndroid,
+                            contentDescription = "IMEI一括"
+                        )
+                    },
+                    label = { Text("IMEI一括") },
+                    modifier = Modifier.testTag("nav_tab_imei")
+                )
+
+                // Tab 2: History
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
                     icon = {
                         BadgedBox(
                             badge = {
@@ -181,7 +200,7 @@ fun MainApp(viewModel: MainViewModel) {
                             }
                         ) {
                             Icon(
-                                imageVector = if (selectedTab == 1) Icons.Filled.History else Icons.Outlined.History,
+                                imageVector = if (selectedTab == 2) Icons.Filled.History else Icons.Outlined.History,
                                 contentDescription = "履歴"
                             )
                         }
@@ -190,13 +209,13 @@ fun MainApp(viewModel: MainViewModel) {
                     modifier = Modifier.testTag("nav_tab_history")
                 )
 
-                // Tab 2: Settings
+                // Tab 3: Settings
                 NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
                     icon = {
                         Icon(
-                            imageVector = if (selectedTab == 2) Icons.Filled.Settings else Icons.Outlined.Settings,
+                            imageVector = if (selectedTab == 3) Icons.Filled.Settings else Icons.Outlined.Settings,
                             contentDescription = "設定"
                         )
                     },
@@ -227,6 +246,25 @@ fun MainApp(viewModel: MainViewModel) {
                 }
 
                 1 -> {
+                    ImeiBatchScreen(
+                        onOpenUrl = { url ->
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "ブラウザを起動できませんでした", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onOpenInAppBrowser = { url, title ->
+                            viewModel.openInAppBrowser(url, title)
+                        },
+                        onNavigateToContinuousScanner = {
+                            selectedTab = 0
+                        }
+                    )
+                }
+
+                2 -> {
                     HistoryScreen(
                         items = scanHistory,
                         searchQuery = historySearchQuery,
@@ -241,7 +279,7 @@ fun MainApp(viewModel: MainViewModel) {
                     )
                 }
 
-                2 -> {
+                3 -> {
                     SettingsScreen(
                         settings = settings,
                         onUpdateSettings = { viewModel.updateSettings(it) }
