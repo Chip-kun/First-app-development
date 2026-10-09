@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>First App - Androidアプリ配布ページ</title>
+    <title>First App - 高機能バーコードスキャナー＆IMEI判定</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -18,7 +18,7 @@
         header {
             background-color: #00796b;
             color: white;
-            padding: 2rem 1rem;
+            padding: 2.5rem 1rem;
             text-align: center;
         }
         main {
@@ -28,17 +28,15 @@
             padding: 0 1rem;
             text-align: center;
         }
-        /* アイコン画像が丸角（24px）で綺麗に収まる枠の設定 */
         .app-icon {
             width: 120px;
             height: 120px;
             margin: 0 auto 1.5rem auto;
-            border-radius: 24px;
+            border-radius: 26px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            background-color: #ddd; /* 画像が読み込まれる前の背景色 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background-color: #ddd;
         }
-        /* 画像が枠を突き破らないように強力に固定 */
         .app-icon img {
             width: 100%;
             height: 100%;
@@ -46,34 +44,87 @@
             display: block; 
         }
         h1 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
+            color: #333;
         }
-        p {
+        .app-description {
             color: #666;
             line-height: 1.6;
             margin-bottom: 2rem;
+            font-size: 1.05rem;
         }
         .btn {
             display: inline-block;
             background-color: #00796b;
             color: white;
-            padding: 1rem 2.5rem;
+            padding: 1.1rem 3rem;
             border-radius: 30px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 10px rgba(0,121,107,0.3);
-            transition: background-color 0.2s;
+            font-size: 1.15rem;
+            box-shadow: 0 4px 12px rgba(0,121,107,0.3);
+            transition: background-color 0.2s, transform 0.1s;
         }
         .btn:hover {
             background-color: #004d40;
         }
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* アプリ紹介（スクリーンショット）エリアのスタイル */
+        .features-section {
+            margin-top: 3.5rem;
+            text-align: left;
+        }
+        .features-section h2 {
+            font-size: 1.4rem;
+            color: #00796b;
+            border-bottom: 2px solid #00796b;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .feature-card h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .screenshot-container {
+            width: 100%;
+            max-width: 280px; /* スマホ画面が綺麗に見える幅に制限 */
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            background-color: #eee;
+        }
+        .screenshot-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         .guide {
             background: white;
             padding: 1.5rem;
             border-radius: 12px;
-            margin-top: 2rem;
+            margin-top: 3rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             text-align: left;
         }
@@ -81,6 +132,9 @@
             font-size: 1.1rem;
             margin-top: 0;
             color: #00796b;
+            border: none;
+            padding: 0;
+            text-align: left;
         }
         .guide ol {
             margin: 0;
@@ -102,42 +156,87 @@
         }
         footer {
             text-align: center;
-            padding: 1rem;
+            padding: 2rem 1rem;
             font-size: 0.85rem;
             color: #888;
+            margin-top: 2rem;
+            border-top: 1px solid #ddd;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>First App 配布ページ</h1>
-        <p style="color: #b2dfdb; margin: 0;">APKファイルを直接インストールできます</p>
+        <h1 style="color: white; margin: 0; font-size: 2.2rem;">First App</h1>
+        <p style="color: #b2dfdb; margin: 0.5rem 0 0 0; font-size: 1.1rem;">自作の便利ツールをいつでもダウンロード</p>
     </header>
     <main>
-        <!-- 画像のファイル名を .png に修正し、はみ出し対策を適用しました -->
+        <!-- アプリのアイコン画像 -->
         <div class="app-icon">
             <img src="./rabbit.jpg" alt="App Icon">
         </div>
         <h1>First App</h1>
-        <p>バーコード検索などができるAndroid向け自作アプリです。</p>
+        <p class="app-description">バーコードをかざすだけでECサイトの価格比較ができるスキャナー機能や、スマートフォンのIMEI（製造番号）からネットワーク利用制限を各キャリア一括で判定できる便利なツールアプリです。</p>
         
+        <!-- ダウンロードボタン -->
         <a href="https://github.com/Chip-kun/First-app-development/releases/download/v1.0.0/app-debug.apk" class="btn" download>Android用 APKをダウンロード</a>
 
+        <!-- 主要機能の紹介（スクリーンショット付き） -->
+        <section class="features-section">
+            <h2>主な機能と画面紹介</h2>
+
+            <!-- 機能1 -->
+            <div class="feature-card">
+                <h3>1. 高速バーコードスキャン</h3>
+                <p>カメラをかざすだけでJANコードなどのバーコードを瞬時に読み取ります。テスト用にポッキーやポカリスエットなどのダミーボタンも用意しています。</p>
+                <div class="screenshot-container">
+                    <img src="./scanner.png" alt="スキャナー画面">
+                </div>
+            </div>
+
+            <!-- 機能2 -->
+            <div class="feature-card">
+                <h3>2. IMEI一括判定・買取検索</h3>
+                <p>スマートフォンの製造番号（IMEI）を入力、またはカメラでスキャンすることで、各携帯キャリア（docomo, au, SoftBank, 楽天）の利用制限をまとめて一括照会できます。</p>
+                <div class="screenshot-container">
+                    <img src="./imei.png" alt="IMEI一括判定画面">
+                </div>
+            </div>
+
+            <!-- 機能3 -->
+            <div class="feature-card">
+                <h3>3. スキャン履歴管理</h3>
+                <p>過去に読み取ったバーコードのデータは自動的に履歴に保存されます。キーワード検索や、よく使う商品のお気に入り登録機能も備えています。</p>
+                <div class="screenshot-container">
+                    <img src="./history.png" alt="スキャン履歴画面">
+                </div>
+            </div>
+
+            <!-- 機能4 -->
+            <div class="feature-card">
+                <h3>4. 充実したカスタマイズ設定</h3>
+                <p>スキャン直後に外部ブラウザ（Amazonやメルカリ等）で即座に開く自動検索設定や、読み取り時のバイブレーション、連続スキャンモードなど、お好みに合わせて動作を変更できます。</p>
+                <div class="screenshot-container">
+                    <img src="./settings.png" alt="自動検索の設定画面">
+                </div>
+            </div>
+        </section>
+
+        <!-- インストール手順 -->
         <div class="guide">
             <h2>インストール手順</h2>
             <ol>
-                <li>上のボタンをタップして、APKファイルをダウンロードします。</li>
-                <li>ダウンロード完了後、通知やファイルマネージャーからファイルを開きます。</li>
+                <li>「Android用 APKをダウンロード」ボタンをタップします。</li>
+                <li>ダウンロード完了後、スマホの通知やファイルマネージャーからファイルを開きます。</li>
                 <li>「インストール」をタップします。</li>
             </ol>
             <div class="warning">
                 <strong>💡 ご注意</strong><br>
-                Playストアを経由しないため、端末によっては「有害なアプリの可能性」「不明なアプリ」といった警告が出る場合があります。インストールを続行するには、ブラウザの「提供元不明のアプリのインストール」の許可をオンにしてください。
+                Playストアを経由しないため、端末によっては「不明なアプリ」といった警告が出る場合があります。インストールを続行するには、ブラウザの設定で「提供元不明のアプリのインストール」の許可をオンにしてください。
             </div>
         </div>
     </main>
     <footer>
-        <p>&copy; 2026 Chip-kun</p>
+        <p>&copy; 2026 Chip-kun. All rights reserved.</p>
     </footer>
 </body>
 </html>
