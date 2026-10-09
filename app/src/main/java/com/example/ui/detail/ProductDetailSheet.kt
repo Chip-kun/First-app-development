@@ -6,8 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,30 +26,33 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -62,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -73,6 +78,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.data.api.AiSummaryResult
 import com.example.data.model.ScanItem
 import com.example.data.model.SearchTarget
 
@@ -81,6 +87,8 @@ import com.example.data.model.SearchTarget
 fun ProductDetailSheet(
     scanItem: ScanItem,
     sheetState: SheetState,
+    aiSummaryState: AiSummaryResult?,
+    onRequestAiAnalysis: (ScanItem) -> Unit,
     onDismiss: () -> Unit,
     onToggleFavorite: (ScanItem) -> Unit,
     onUpdateNote: (ScanItem, String) -> Unit,
@@ -90,6 +98,11 @@ fun ProductDetailSheet(
     val context = LocalContext.current
     var isEditingNote by remember { mutableStateOf(false) }
     var noteText by remember { mutableStateOf(scanItem.note ?: "") }
+
+    val isWebUrl = remember(scanItem.barcode) {
+        scanItem.barcode.startsWith("http://", ignoreCase = true) ||
+                scanItem.barcode.startsWith("https://", ignoreCase = true)
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -122,14 +135,14 @@ fun ProductDetailSheet(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = if (isWebUrl) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = scanItem.format,
+                            text = if (isWebUrl) "QRコード (URL)" else scanItem.format,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = if (isWebUrl) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
@@ -170,21 +183,24 @@ fun ProductDetailSheet(
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 val text = buildString {
-                                    append("【商品バーコード検索】\n")
-                                    if (!scanItem.productName.isNullOrBlank()) {
-                                        append("商品名: ${scanItem.productName}\n")
+                                    if (isWebUrl) {
+                                        append("【QRコード検出URL】\n${scanItem.barcode}")
+                                    } else {
+                                        append("【商品バーコード検索】\n")
+                                        if (!scanItem.productName.isNullOrBlank()) {
+                                            append("商品名: ${scanItem.productName}\n")
+                                        }
+                                        if (!scanItem.brand.isNullOrBlank()) {
+                                            append("ブランド: ${scanItem.brand}\n")
+                                        }
+                                        append("バーコード: ${scanItem.barcode}\n")
+                                        append("Amazon: ${SearchTarget.AMAZON.buildSearchUrl(scanItem.barcode)}\n")
+                                        append("Yahoo: ${SearchTarget.YAHOO.buildSearchUrl(scanItem.barcode)}")
                                     }
-                                    if (!scanItem.brand.isNullOrBlank()) {
-                                        append("ブランド: ${scanItem.brand}\n")
-                                    }
-                                    append("バーコード: ${scanItem.barcode}\n")
-                                    append("Amazon: ${SearchTarget.AMAZON.buildSearchUrl(scanItem.barcode)}\n")
-                                    append("Yahoo: ${SearchTarget.YAHOO.buildSearchUrl(scanItem.barcode)}\n")
-                                    append("楽天: ${SearchTarget.RAKUTEN.buildSearchUrl(scanItem.barcode)}")
                                 }
                                 putExtra(Intent.EXTRA_TEXT, text)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "バーコードを共有"))
+                            context.startActivity(Intent.createChooser(shareIntent, "共有"))
                         },
                         modifier = Modifier.testTag("detail_share_button")
                     ) {
@@ -203,7 +219,7 @@ fun ProductDetailSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Main Product Summary Card
+            // Main Product / QR Summary Card
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -217,7 +233,6 @@ fun ProductDetailSheet(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Product image or QR placeholder
                     if (!scanItem.imageUrl.isNullOrBlank()) {
                         AsyncImage(
                             model = scanItem.imageUrl,
@@ -234,14 +249,17 @@ fun ProductDetailSheet(
                             modifier = Modifier
                                 .size(88.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                .background(
+                                    if (isWebUrl) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.QrCode,
+                                imageVector = if (isWebUrl) Icons.Default.Language else Icons.Default.QrCode,
                                 contentDescription = null,
                                 modifier = Modifier.size(44.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = if (isWebUrl) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -250,7 +268,7 @@ fun ProductDetailSheet(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = scanItem.productName ?: "読み取り完了",
+                            text = if (isWebUrl) "検出されたWebサイト" else (scanItem.productName ?: "読み取り完了"),
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -270,14 +288,14 @@ fun ProductDetailSheet(
 
                         Spacer(modifier = Modifier.height(6.dp))
 
-                        // Barcode number chip with 1-tap copy
+                        // Barcode/URL number chip with 1-tap copy
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceContainerHighest,
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                clipboard.setPrimaryClip(ClipData.newPlainText("Barcode", scanItem.barcode))
-                                Toast.makeText(context, "バーコード番号をコピーしました", Toast.LENGTH_SHORT).show()
+                                clipboard.setPrimaryClip(ClipData.newPlainText("BarcodeOrUrl", scanItem.barcode))
+                                Toast.makeText(context, if (isWebUrl) "URLをコピーしました" else "バーコード番号をコピーしました", Toast.LENGTH_SHORT).show()
                             }
                         ) {
                             Row(
@@ -287,10 +305,13 @@ fun ProductDetailSheet(
                             ) {
                                 Text(
                                     text = scanItem.barcode,
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
                                     fontFamily = FontFamily.Monospace,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
                                 )
                                 Icon(
                                     imageVector = Icons.Default.ContentCopy,
@@ -304,23 +325,312 @@ fun ProductDetailSheet(
                 }
             }
 
+            // If it's a URL: Big Prominent "Open in Chrome / Browser" Card
+            if (isWebUrl) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Language,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Webサイトへのリンク",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = scanItem.barcode,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = { onOpenExternalBrowser(scanItem.barcode) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("open_url_external_button"),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Chrome等で開く", fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
+                                onClick = { onOpenSearchUrl(scanItem.barcode, scanItem.productName ?: "Webページ") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("open_url_inapp_button"),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("アプリ内で表示")
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // FEATURE 1: Gemini AI Product Summary & Feature Review
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("ai_summary_card")
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(Color(0xFF8A2BE2), Color(0xFF00E5FF))
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "AI 商品特徴＆口コミ要約",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Gemini AIが特徴・メリット・どんな人向きか分析",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        if (aiSummaryState == null) {
+                            Button(
+                                onClick = { onRequestAiAnalysis(scanItem) },
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.testTag("request_ai_summary_button")
+                            ) {
+                                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("AI解説", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
+                    // AI State Container
+                    when (aiSummaryState) {
+                        is AiSummaryResult.Loading -> {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.5.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Gemini AIが商品レビューと特徴を分析中...",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        is AiSummaryResult.Success -> {
+                            val summary = aiSummaryState.summary
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // Overview text
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = summary.overview,
+                                    fontSize = 13.sp,
+                                    lineHeight = 19.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(12.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Pros / Merits
+                            Text(
+                                text = "👍 メリット・人気のポイント",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF00897B)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            summary.pros.forEach { pro ->
+                                Row(
+                                    modifier = Modifier.padding(vertical = 2.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = Color(0xFF00897B),
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .padding(top = 2.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = pro,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        lineHeight = 17.sp
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Cons / Considerations
+                            Text(
+                                text = "⚠️ 注意点・気になる点",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFD84315)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            summary.cons.forEach { con ->
+                                Row(
+                                    modifier = Modifier.padding(vertical = 2.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = Color(0xFFD84315),
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .padding(top = 2.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = con,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        lineHeight = 17.sp
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Target Audience
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "🎯 おすすめ: ${summary.targetAudience}",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        is AiSummaryResult.Error -> {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = aiSummaryState.message,
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+
+                        null -> {
+                            // Initial state: brief prompt
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // Section: Shopping & Price Comparison Hub
             Text(
-                text = "自動検索・最安値・価格比較",
+                text = "各ショップで最安値・価格比較",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "各ショッピングサイトの最新価格やレビューを直接確認できます",
+                text = "各通販サイトのリアルタイム価格やレビューを直接確認できます",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Shopping Service Cards Grid / Rows
+            // Shopping Service Cards
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -534,13 +844,10 @@ fun ShoppingServiceRow(
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                // In-App browser preview button
                 Button(
                     onClick = onInAppClick,
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = brandColor
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = brandColor),
                     modifier = Modifier
                         .height(36.dp)
                         .testTag("search_in_app_${target.name.lowercase()}")
@@ -548,7 +855,6 @@ fun ShoppingServiceRow(
                     Text("検索", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
-                // External browser icon button
                 IconButton(
                     onClick = onExternalClick,
                     modifier = Modifier

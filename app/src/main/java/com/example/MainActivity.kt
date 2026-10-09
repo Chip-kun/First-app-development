@@ -88,6 +88,7 @@ fun MainApp(viewModel: MainViewModel) {
 
     val scanHistory by viewModel.scanHistory.collectAsState()
     val activeDetailItem by viewModel.activeDetailItem.collectAsState()
+    val aiSummaryState by viewModel.aiSummaryState.collectAsState()
     val browserUrlState by viewModel.browserUrlState.collectAsState()
     val settings by viewModel.settings.collectAsState()
     val historySearchQuery by viewModel.historySearchQuery.collectAsState()
@@ -253,6 +254,8 @@ fun MainApp(viewModel: MainViewModel) {
                 ProductDetailSheet(
                     scanItem = item,
                     sheetState = sheetState,
+                    aiSummaryState = aiSummaryState,
+                    onRequestAiAnalysis = { viewModel.requestAiAnalysis(it) },
                     onDismiss = { viewModel.closeDetailSheet() },
                     onToggleFavorite = { viewModel.toggleFavorite(it) },
                     onUpdateNote = { scanItem, note -> viewModel.updateNote(scanItem, note) },

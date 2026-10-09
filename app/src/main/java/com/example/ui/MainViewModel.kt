@@ -3,6 +3,8 @@ package com.example.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.api.AiSummaryResult
+import com.example.data.api.GeminiProductAdvisor
 import com.example.data.api.ProductLookupService
 import com.example.data.db.AppDatabase
 import com.example.data.model.AppSettings
@@ -28,6 +30,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
     private val scanDao = database.scanDao()
     private val productLookupService = ProductLookupService()
+    private val geminiProductAdvisor = GeminiProductAdvisor()
     private val feedbackHelper = SoundVibratorHelper(application)
 
     // App Settings
@@ -41,6 +44,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // Currently inspected item in Detail Sheet
     private val _activeDetailItem = MutableStateFlow<ScanItem?>(null)
     val activeDetailItem: StateFlow<ScanItem?> = _activeDetailItem.asStateFlow()
+
+    // AI Product Analysis state
+    private val _aiSummaryState = MutableStateFlow<AiSummaryResult?>(null)
+    val aiSummaryState: StateFlow<AiSummaryResult?> = _aiSummaryState.asStateFlow()
 
     // In-app web browser state
     private val _browserUrlState = MutableStateFlow<Pair<String, String>?>(null) // (url, title)
@@ -72,6 +79,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
+            val isWebUrl = barcode.startsWith("http://", ignoreCase = true) || barcode.startsWith("https://", ignoreCase = true)
+
             // Check if already in DB
             val existing = scanDao.getByBarcode(barcode)
             val itemToSave: ScanItem
@@ -85,7 +94,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val details = productLookupService.lookupProduct(barcode)
                 itemToSave = ScanItem(
                     barcode = barcode,
-                    format = format,
+                    format = if (isWebUrl) "QRコード (URL)" else format,
                     productName = details.name,
                     brand = details.brand,
                     imageUrl = details.imageUrl,
@@ -96,8 +105,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 itemToSave.copy(id = newId)
             }
 
-            // Auto-Search decision
-            if (currentSettings.autoOpenBrowser && currentSettings.autoSearchTarget != SearchTarget.ALL_HUB) {
+            // Reset previous AI summary
+            _aiSummaryState.value = null
+
+            // 1. If it's a URL and autoOpenUrls is enabled, directly launch Chrome / browser!
+            if (isWebUrl && currentSettings.autoOpenUrls) {
+                _autoOpenEvents.emit(AutoOpenEvent.OpenBrowser(barcode))
+                if (!currentSettings.continuousScan) {
+                    _activeDetailItem.value = itemToSave
+                }
+            } else if (currentSettings.autoOpenBrowser && currentSettings.autoSearchTarget != SearchTarget.ALL_HUB) {
+                // 2. Regular product barcode auto-open
                 val url = currentSettings.autoSearchTarget.buildSearchUrl(barcode)
                 _autoOpenEvents.emit(AutoOpenEvent.OpenBrowser(url))
             } else if (!currentSettings.continuousScan) {
@@ -107,12 +125,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun requestAiAnalysis(item: ScanItem) {
+        viewModelScope.launch {
+            _aiSummaryState.value = AiSummaryResult.Loading
+            val result = geminiProductAdvisor.analyzeProduct(
+                barcode = item.barcode,
+                productName = item.productName,
+                brand = item.brand
+            )
+            _aiSummaryState.value = result
+        }
+    }
+
     fun openDetailSheet(item: ScanItem) {
+        _aiSummaryState.value = null
         _activeDetailItem.value = item
     }
 
     fun closeDetailSheet() {
         _activeDetailItem.value = null
+        _aiSummaryState.value = null
     }
 
     fun openInAppBrowser(url: String, title: String) {

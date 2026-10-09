@@ -93,6 +93,23 @@ class ProductLookupService {
     suspend fun lookupProduct(barcode: String): ProductDetails = withContext(Dispatchers.IO) {
         val cleanBarcode = barcode.trim()
 
+        // 0. Handle Web URLs (e.g. from QR Codes)
+        if (cleanBarcode.startsWith("http://", ignoreCase = true) || cleanBarcode.startsWith("https://", ignoreCase = true)) {
+            val domain = try {
+                android.net.Uri.parse(cleanBarcode).host ?: "Webサイト"
+            } catch (_: Exception) {
+                "Webサイト"
+            }
+            return@withContext ProductDetails(
+                barcode = cleanBarcode,
+                name = domain,
+                brand = "Webリンク",
+                imageUrl = null,
+                category = "QRコード / Webサイト",
+                originCountry = "インターネット"
+            )
+        }
+
         // 1. Check local catalog first for immediate response
         popularJanDatabase[cleanBarcode]?.let { return@withContext it }
 
@@ -172,7 +189,8 @@ class ProductLookupService {
             "4901330573024" to "じゃがりこ (カルビー)",
             "4902777008592" to "チョコレート効果72% (明治)",
             "4902102072625" to "コカ・コーラ 500ml",
-            "4902370550733" to "Nintendo Switch (任天堂)"
+            "4902370550733" to "Nintendo Switch (任天堂)",
+            "https://shopping.yahoo.co.jp" to "Yahoo! (QRコードURL)"
         )
     }
 }
